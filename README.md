@@ -271,6 +271,18 @@ In my experiments, I found that the `softening` parameter doesn't seem to have a
 
 That's why I ran the third simulation with the `plasticine` material. However, I still didn't observe any significant changes in the simulation results. After a careful review of the code, I found that the young's modulus (`E`) is set to a very high value (2e6) in the `plasticine` material, which means that the material is very stiff and doesn't deform much under stress. As a result, the `softening` parameter doesn't have a noticeable effect on the simulation results.
 
+#### Key Takeaways and Findings
+
+This ablation study provided several key insights into the behavior of the PhysGaussian simulation framework and the interplay between its core parameters.
+
+1.  **The Inherent Trade-Off Between Accuracy and Performance:** The most evident finding is the trade-off between computational cost and physical fidelity. Parameters like `n_grid` and `substep_dt` directly control this balance. Increasing the grid resolution or decreasing the time step leads to more stable, detailed, and visually plausible simulations, but at a significant cost to computation time. This highlights a fundamental challenge in physics-based animation.
+
+2.  **Parameter Sensitivity is Material-Dependent:** A crucial takeaway is that not all parameters affect all materials equally. For instance, `grid_v_damping_scale` had a very pronounced effect on the highly elastic `metal` but a nearly negligible one on the inelastic `plasticine`. Similarly, `softening` dramatically changed the behavior of the deformable materials (`metal` and `plasticine`) but had little impact on the granular `sand`. This shows that achieving realistic simulations requires a nuanced understanding of which parameters are most influential for a given material type.
+
+3.  **Visual Plausibility vs. Quantitative Metrics (PSNR):** While PSNR provides a useful quantitative measure of similarity to a baseline, the visual results often tell a more complete story. This finding suggests that a combination of quantitative metrics and qualitative human judgment is necessary to fully evaluate the quality of a physics-based animation.
+
+Overall, this study underscores the complexity and power of the PhysGaussian framework. Achieving a desired physical behavior is not about finding one "correct" setting, but rather about skillfully tuning a set of interconnected parameters to match the unique properties of the material being simulated.
+
 ---
 
 ### BONUS: Automatic Parameter Inference
