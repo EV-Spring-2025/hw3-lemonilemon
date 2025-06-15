@@ -51,7 +51,7 @@ pip install -e .
 And hopefully, you can run the simulation scripts without any issues on the Meow1 workstation.
 
 ### Part 1: Baseline Simulation
-In this part, I simulated two different materials with default parameters as a baseline, as required by the assignment. The result is shown below:
+In this part, I simulated three different materials with default parameters as a baseline, as required by the assignment. The result is shown below:
 
 - `sand`:
     - Baseline Parameter Settings:
@@ -95,13 +95,12 @@ In this part, I simulated two different materials with default parameters as a b
         | `substep_dt` | 1e-4 |
         | `grid_v_damping_scale` | 0.9999 |
         | `softening` | 0.1 |
-        | `E` | 1e4 |
 
         **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_plasticine_sim.json`.
     - Simulation Video: [Link to the video](https://youtube.com/shorts/iPZ-AKoJf8w?feature=share)
 
         ![GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87)
-    - Brief Description:
+    - Brief Description: This is an extra one. I only ran the simulation with `sand` and `metal` materials, but I noticed that only the `plasticine` material be used for `softening` parameter. However, after running the simulation, I found that the `plasticine` material behaves to be a very bouncy material, which is not the expected behavior. I think this is because the young's modulus (`E`), which is shared by all materials I used, is set to a very high value (2e6). With such a high value, the `plasticine` material behaves more like a solid than a soft material. I think this is not the expected behavior of the `plasticine` material.
 
 The default values of the parameters are mostly from `ficus_config.json` in the official repository, except for the parameters that are listed above. And all the simulation videos are run with the original `gs_simlation.py` with the `ficus_whitebg-trained` model:
 
@@ -115,9 +114,10 @@ python gs_simulation.py --model_path model/ficus_whitebg-trained/ --output_path 
 
 This section details the results of an ablation study on the key physical parameters in the simulation. The study is organized by parameter to analyze its effect across different materials.
 
-PSNR curves are used to evaluate the difference between the baseline and adjusted parameters. It is computed with my own implementation of PSNR, you can run it as follows:
+PSNR curves (PSNR vs frame number) are used to evaluate the difference between the baseline and adjusted parameters. It is computed with my own implementation of PSNR, you can run it as follows:
 
 ```bash
+python calc_psnr.py --baseline <baseline_video> --target <target_video> --output_curve_path <output_curve_path>
 ```
 
 #### 1. Adjusting `n_grid`
@@ -148,10 +148,12 @@ This study explores the effect of the MPM grid resolution (`n_grid`).
 | **Metal** | ![Baseline Metal GIF](https://github.com/user-attachments/assets/2a4f90f9-7135-4c97-92b2-ee5788c1a7a2) | ![Adjusted n_grid Metal GIF](https://github.com/user-attachments/assets/79baaa0b-6d0e-4746-83f4-a9cb40ac19a1) |
 | **Plasticine** | ![Baseline Plasticine GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87) | ![Adjusted n_grid Plasticine GIF](https://github.com/user-attachments/assets/ae3db0fa-80fb-4fe0-bc55-cd7e3bbdb85c) |
 
-**Note:** The baseline `n_grid` value is 100 for `sand`, and 25 for both `metal` and `plasticine`. The adjusted value is set to 50 for all materials. Hence, the adjusted `n_grid` is not always lower or higher than the baseline, but rather a comparative value to analyze the effect of grid resolution.
-#### Overall Observations & Insights for `n_grid`
+**Important Notes:** The baseline `n_grid` value is 100 for `sand`, and 25 for both `metal` and `plasticine`. The adjusted value is set to 50 for all materials. Hence, the adjusted `n_grid` is not always lower or higher than the baseline, but rather a comparative value to analyze the effect of grid resolution.
 
-[Your comparative observations for the `n_grid` parameter go here.]
+#### Overall Observations & Insights for `n_grid`
+The `n_grid` parameter, which defines the resolution of the underlying simulation grid, has a profound impact on both the visual quality and the physical plausibility of the simulations. A higher `n_grid` value makes the simulation process more sensitive to fine-grained interactions, resulting in motion that appears more natural and detailed.
+
+Conversely, a lower `n_grid` value leads to a more coarse simulation, which can result in artifacts such as jittery motion or unrealistic interactions between particles if we see the `sand` simulation really closely. But `sand` simulation is still acceptable, as `n_grid = 50` is still a relatively high resolution for the sand material, and it means a lot for the `sand` material as it is a granular medium that requires a higher resolution to simulate the details of the sand particles, that's why I set the baseline `n_grid` to be 100. However, for the `metal` and `plasticine` materials, a lower `n_grid` value is sufficient to capture the essential dynamics without introducing significant artifacts, as they are more solid-like materials. Also, as the state of the `metal` and `plasticine` materials are more stable and less prone to fine-grained interactions, the PSNR values for these materials are going to be stable, too.
 
 ---
 
@@ -185,7 +187,11 @@ This study explores the effect of the simulation time step size (`substep_dt`).
 
 ##### Overall Observations & Insights for `substep_dt`
 
-[Your comparative observations for the `substep_dt` parameter go here.]
+The `substep_dt` parameter directly controls the temporal resolution of the physics simulation, and its adjustment presents a classic trade-off between computational cost and simulation fidelity. In this study, I reduced the `substep_dt` from the default value of 1e-4 to 1e-5, effectively increasing the number of physics calculations per frame by a factor of 10.
+
+The most immediate difference is that the running time of the script is significantly longer, as reducing substep_dt by a factor of 10 means ten times more physics calculations are performed for each rendered frame. However, the results clearly show that with a smaller time step, the performance improves, leading to a more stable and physically accurate simulation. This "careful" simulation is better able to handle rapid changes in motion, such as the initial impact and subsequent rebound or dispersion.
+
+And the PSNR values are increasing after the state of the material is stable, which means even the simulation process is a bit difference, the final state of the material is still similar to the baseline simulation.
 
 ---
 
@@ -219,7 +225,9 @@ This study explores the effect of the grid velocity damping factor (`grid_v_damp
 
 ##### Overall Observations & Insights for `grid_v_damping_scale`
 
-[Your comparative observations for the `grid_v_damping_scale` parameter go here.]
+The grid_v_damping_scale parameter governs the rate of energy dissipation within the simulation grid. By setting this value to 0.9995—which is less than the default of 0.9999—we reduce the amount of damping, allowing objects to retain more kinetic energy.
+
+This effect is most obvious in the `metal` simulation, where the lower damping results in a more energetic and higher-rebound collision. For the `sand`, the particles scatter more widely and take a noticeably longer time to settle, as less energy is lost during their interactions. The impact on the `plasticine` is the most subtle; since `plasticine` is designed to absorb energy and deform, there is very little kinetic energy to be preserved, so the change in damping has a minimal visual effect on its behavior. This highlights how damping primarily influences the elastic and dynamic properties of materials.
 
 ---
 
@@ -252,14 +260,27 @@ This study explores the effect of the stress softening factor (`softening`).
 | **Plasticine** | ![Baseline Plasticine GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87) | ![Adjusted softening Plasticine GIF](https://github.com/user-attachments/assets/3a805f70-34e4-49f2-a25d-936eb405d1d1) |
 
 ##### Overall Observations & Insights for `softening`
+In my experiments, I found that the `softening` parameter doesn't seem to have any significant effect on the simulation results. I am curious about the reason behind this, as I expected it to influence the material's response to stress and deformation. After tracking the code, I found that the `softening` parameter is used in a function called `von_mises_return_mapping_with_damage`, which is only used in the `plasticine` material simulation. In the `sand` and `metal` materials, the `softening` parameter is not used at all, which explains why I didn't observe any changes in the simulation results when adjusting it.
 
-[Your comparative observations for the `softening` parameter go here.]
+That's why I ran the third simulation with the `plasticine` material. However, I still didn't observe any significant changes in the simulation results. After a careful review of the code, I found that the young's modulus (`E`) is set to a very high value (2e6) in the `plasticine` material, which means that the material is very stiff and doesn't deform much under stress. As a result, the `softening` parameter doesn't have a noticeable effect on the simulation results.
 
 ---
 
 ### BONUS: Automatic Parameter Inference
 
-[Your detailed answer to the bonus question goes here. You should describe a potential framework, perhaps involving machine learning, optimization, or other techniques, to address the limitation that parameters are manually defined.]
+To automatically infer material parameters from a target video, we can design a framework that treats this as an optimization problem. As suggested in the PhysGaussian paper, a powerful and efficient approach would combine Gaussian Splatting (GS) segmentation with a differentiable Material Point Method (MPM) simulator.
+
+The proposed framework would operate as follows:
+
+1.  **Scene Segmentation from Target Video:** Given a target video of a real-world object (or multiple objects), the first step is to use a **GS segmentation** technique. This process would analyze the video and identify distinct objects, assigning a unique label to the set of Gaussians that represent each object. This is crucial for scenes with multiple materials, as it allows us to optimize parameters for each object independently.
+
+2.  **Differentiable Physics Simulation:** The core of the framework is a **differentiable MPM simulator**. Unlike a standard simulator, a differentiable version allows us to analytically compute the gradient of the simulation's outcome with respect to the input physical parameters (e.g., Young's modulus, softening).
+
+3.  **Optimization Loop:** The system would then enter an iterative loop to find the best parameters using a gradient-based optimization method, which is a classic approach in optimization problems.
+
+4.  **Convergence:** The optimization is repeated until the loss converges to a minimum. At this point, the simulation video should closely match the target video, and the resulting set of parameters will be the inferred physical properties of the material(s).
+
+This state-of-the-art "analysis-by-synthesis" approach is more efficient than black-box methods, as it uses gradient information to intelligently search for the optimal parameters rather than relying on random guessing.
 
 ---
 
