@@ -33,10 +33,11 @@ Please complete Part 1–2 as described in the [Google Slides](https://docs.goog
 I used the offical PhysGaussian repository on CSIE workstation Meow1 to run the simulation. However, I encountered some issues with the environment setup, the way I solved the issues is described in the following sections. The results of the simulation are also included below.
 
 ### Environment Setup (on Meow1)
-As the CUDA version on Meow1 is 12.8 which is not the desired version for the PhysGaussian repository, I modified the codebase to make it compatible with the newer version (e.g. include corresponding C libraries, increase memory limits, etc.) . I forked the official repository and made the necessary changes to the codebase. In that case, after cloning the repository, one can directly use the update the submodule from the forked repository:
+
+As the CUDA version on Meow1 is 12.8 which is not the desired version for the PhysGaussian repository, I modified the codebase to make it compatible with the newer version (e.g. include corresponding C libraries, increase memory limits, etc.). I made the necessary changes to the codebase and made a patch file for easy usage. In that case, after recursively cloning the repository, one can directly apply the changes of submodules by:
 
 ```bash
-
+patch -p1 < changes.patch
 ```
 
 After that, I use `venv` to create a virtual environment using the `requirement.txt` I provided and the version of Python is 3.9.23.
@@ -51,10 +52,12 @@ pip install -e .
 And hopefully, you can run the simulation scripts without any issues on the Meow1 workstation.
 
 ### Part 1: Baseline Simulation
+
 In this part, I simulated three different materials with default parameters as a baseline, as required by the assignment. The result is shown below:
 
 - `sand`:
-    - Baseline Parameter Settings:
+  - Baseline Parameter Settings:
+
         | Parameter | Value |
         |:----------|:---------------------|
         | `material` | `sand` |
@@ -65,13 +68,14 @@ In this part, I simulated three different materials with default parameters as a
 
         **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_sand_sim.json`. The `n_grid` is larger than other materials, which is because the sand material requires a higher resolution to simulate the details of the sand particles.
 
-    - Simulation Video: [Link to the video](https://youtube.com/shorts/2JhbbjYjp6c?feature=share)
+  - Simulation Video: [Link to the video](https://youtube.com/shorts/2JhbbjYjp6c?feature=share)
 
         ![GIF](https://github.com/user-attachments/assets/8fcc079e-9af9-4634-b71a-0a6d60168805)
-    - Brief Description:
+  - Brief Description:
         `sand` is a granular medium. Instead of a single solid object, it behaves as a collection of individual particles. Upon impact, the sand does not bounce as a whole but instead flows and disperses, with particles scattering and settling into a pile. This demonstrates the characteristic behavior of granular materials.
 - `metal`:
-    - Parameters:
+  - Parameters:
+
         | Parameter | Value |
         |:----------|:---------------------|
         | `material` | `metal` |
@@ -81,13 +85,14 @@ In this part, I simulated three different materials with default parameters as a
         | `softening` | 0.1 |
 
         **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_metal_sim.json`.
-    - Simulation Video: [Link to the video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
+  - Simulation Video: [Link to the video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
 
         ![GIF](https://github.com/user-attachments/assets/2a4f90f9-7135-4c97-92b2-ee5788c1a7a2)
-    - Brief Description:
+  - Brief Description:
         `metal` behaves as an elastoplastic solid. Under small impacts, it is elastic, meaning it resists bending and springs back to its original shape. However, if subjected to a very strong force, it will exceed its elastic limit and undergo plastic deformation, causing it to bend permanently and not return to its original form. In this `ficus` simulation, as I don't provide a `yield_stress` parameter, it defaults to be 0, which means the metal will start to deform plastically under any impact, resulting in a permanent bend.
 - `plasticine`:
-    - Parameters:
+  - Parameters:
+
         | Parameter | Value |
         |:----------|:---------------------|
         | `material` | `plasticine` |
@@ -97,10 +102,10 @@ In this part, I simulated three different materials with default parameters as a
         | `softening` | 0.1 |
 
         **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_plasticine_sim.json`.
-    - Simulation Video: [Link to the video](https://youtube.com/shorts/iPZ-AKoJf8w?feature=share)
+  - Simulation Video: [Link to the video](https://youtube.com/shorts/iPZ-AKoJf8w?feature=share)
 
         ![GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87)
-    - Brief Description: This is an extra one. I only ran the simulation with `sand` and `metal` materials, but I noticed that only the `plasticine` material be used for `softening` parameter. However, after running the simulation, I found that the `plasticine` material behaves to be a very bouncy material, which is not the expected behavior. I think this is because the young's modulus (`E`), which is shared by all materials I used, is set to a very high value (2e6). With such a high value, the `plasticine` material behaves more like a solid than a soft material. I think this is not the expected behavior of the `plasticine` material.
+  - Brief Description: This is an extra one. I only ran the simulation with `sand` and `metal` materials, but I noticed that only the `plasticine` material be used for `softening` parameter. However, after running the simulation, I found that the `plasticine` material behaves to be a very bouncy material, which is not the expected behavior. I think this is because the young's modulus (`E`), which is shared by all materials I used, is set to a very high value (2e6). With such a high value, the `plasticine` material behaves more like a solid than a soft material. I think this is not the expected behavior of the `plasticine` material.
 
 The default values of the parameters are mostly from `ficus_config.json` in the official repository, except for the parameters that are listed above. And all the simulation videos are run with the original `gs_simlation.py` with the `ficus_whitebg-trained` model:
 
@@ -124,21 +129,21 @@ python calc_psnr.py --baseline <baseline_video> --target <target_video> --output
 
 This study explores the effect of the MPM grid resolution (`n_grid`).
 
-* **Material:** `sand` (decreased from 100 to 50)
-    * **PSNR:** 29.05
+- **Material:** `sand` (decreased from 100 to 50)
+  - **PSNR:** 29.05
 
         ![PSNR vs Frame](imgs/n_grid/sand.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/pRCkLeAwtV4?feature=share)
-* **Material:** `metal` (increased from 25 to 50)
-    * **PSNR:** 17.01
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/pRCkLeAwtV4?feature=share)
+- **Material:** `metal` (increased from 25 to 50)
+  - **PSNR:** 17.01
 
         ![PSNR vs Frame](imgs/n_grid/metal.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
-* **Material:** `plasticine` (increased from 25 to 50)
-    * **PSNR:** 22.08
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
+- **Material:** `plasticine` (increased from 25 to 50)
+  - **PSNR:** 22.08
 
         ![PSNR vs Frame](imgs/n_grid/plasticine.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
 
 ##### Visual Comparison for `n_grid`
 
@@ -151,6 +156,7 @@ This study explores the effect of the MPM grid resolution (`n_grid`).
 **Important Notes:** The baseline `n_grid` value is 100 for `sand`, and 25 for both `metal` and `plasticine`. The adjusted value is set to 50 for all materials. Hence, the adjusted `n_grid` is not always lower or higher than the baseline, but rather a comparative value to analyze the effect of grid resolution.
 
 #### Overall Observations & Insights for `n_grid`
+
 The `n_grid` parameter, which defines the resolution of the underlying simulation grid, has a profound impact on both the visual quality and the physical plausibility of the simulations. A higher `n_grid` value makes the simulation process more sensitive to fine-grained interactions, resulting in motion that appears more natural and detailed.
 
 Conversely, a lower `n_grid` value leads to a more coarse simulation, which can result in artifacts such as jittery motion or unrealistic interactions between particles if we see the `sand` simulation really closely. But `sand` simulation is still acceptable, as `n_grid = 50` is still a relatively high resolution for the sand material, and it means a lot for the `sand` material as it is a granular medium that requires a higher resolution to simulate the details of the sand particles, that's why I set the baseline `n_grid` to be 100. However, for the `metal` and `plasticine` materials, a lower `n_grid` value is sufficient to capture the essential dynamics without introducing significant artifacts, as they are more solid-like materials. Also, as the state of the `metal` and `plasticine` materials are more stable and less prone to fine-grained interactions, the PSNR values for these materials are going to be stable, too.
@@ -161,21 +167,21 @@ Conversely, a lower `n_grid` value leads to a more coarse simulation, which can 
 
 This study explores the effect of the simulation time step size (`substep_dt`).
 
-* **Material:** `sand`
-    * **PSNR:** 15.52
+- **Material:** `sand`
+  - **PSNR:** 15.52
 
         ![PSNR vs Frame](imgs/substep_dt/sand.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/TjX9gdCpIvY?feature=share)
-* **Material:** `metal`
-    * **PSNR:** 18.35
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/TjX9gdCpIvY?feature=share)
+- **Material:** `metal`
+  - **PSNR:** 18.35
 
         ![PSNR vs Frame](imgs/substep_dt/metal.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/apv-FjOMsZQ?feature=share)
-* **Material:** `plasticine`
-    * **PSNR:** 22.64
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/apv-FjOMsZQ?feature=share)
+- **Material:** `plasticine`
+  - **PSNR:** 22.64
 
         ![PSNR vs Frame](imgs/substep_dt/plasticine.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
 
 ##### Visual Comparison for `substep_dt`
 
@@ -199,21 +205,21 @@ And the PSNR values are increasing after the state of the material is stable, wh
 
 This study explores the effect of the grid velocity damping factor (`grid_v_damping_scale`).
 
-* **Material:** `sand`
-    * **PSNR:** 15.33
+- **Material:** `sand`
+  - **PSNR:** 15.33
 
         ![PSNR vs Frame](imgs/grid_v_damping_scale/sand.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/MOIi2vrwgAA?feature=share)
-* **Material:** `metal`
-    * **PSNR:** 17.67
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/MOIi2vrwgAA?feature=share)
+- **Material:** `metal`
+  - **PSNR:** 17.67
 
         ![PSNR vs Frame](imgs/grid_v_damping_scale/metal.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/Vt2kfQB-NG8?feature=share)
-* **Material:** `plasticine`
-    * **PSNR:** 29.77
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/Vt2kfQB-NG8?feature=share)
+- **Material:** `plasticine`
+  - **PSNR:** 29.77
 
         ![PSNR vs Frame](imgs/grid_v_damping_scale/plasticine.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/mFf3deCnkcA?feature=share)
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/mFf3deCnkcA?feature=share)
 
 ##### Visual Comparison for `grid_v_damping_scale`
 
@@ -235,21 +241,21 @@ This effect is most obvious in the `metal` simulation, where the lower damping r
 
 This study explores the effect of the stress softening factor (`softening`).
 
-* **Material:** `sand`
-    * **PSNR:** 31.93
+- **Material:** `sand`
+  - **PSNR:** 31.93
 
         ![PSNR vs Frame](imgs/softening/sand.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/3DcBmdQ2S40?feature=share)
-* **Material:** `metal`
-    * **PSNR:** 38.52
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/3DcBmdQ2S40?feature=share)
+- **Material:** `metal`
+  - **PSNR:** 38.52
 
         ![PSNR vs Frame](imgs/softening/metal.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/H9I1ZmHY5hw?feature=share)
-* **Material:** `plasticine`
-    * **PSNR:** 41.81
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/H9I1ZmHY5hw?feature=share)
+- **Material:** `plasticine`
+  - **PSNR:** 41.81
 
         ![PSNR vs Frame](imgs/softening/plasticine.png)
-    * **Simulation Video:** [Link to video](https://youtube.com/shorts/KQwwl2Oxij8?feature=share)
+  - **Simulation Video:** [Link to video](https://youtube.com/shorts/KQwwl2Oxij8?feature=share)
 
 ##### Visual Comparison for `softening`
 
@@ -260,6 +266,7 @@ This study explores the effect of the stress softening factor (`softening`).
 | **Plasticine** | ![Baseline Plasticine GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87) | ![Adjusted softening Plasticine GIF](https://github.com/user-attachments/assets/3a805f70-34e4-49f2-a25d-936eb405d1d1) |
 
 ##### Overall Observations & Insights for `softening`
+
 In my experiments, I found that the `softening` parameter doesn't seem to have any significant effect on the simulation results. I am curious about the reason behind this, as I expected it to influence the material's response to stress and deformation. After tracking the code, I found that the `softening` parameter is used in a function called `von_mises_return_mapping_with_damage`, which is only used in the `plasticine` material simulation. In the `sand` and `metal` materials, the `softening` parameter is not used at all, which explains why I didn't observe any changes in the simulation results when adjusting it.
 
 That's why I ran the third simulation with the `plasticine` material. However, I still didn't observe any significant changes in the simulation results. After a careful review of the code, I found that the young's modulus (`E`) is set to a very high value (2e6) in the `plasticine` material, which means that the material is very stiff and doesn't deform much under stress. As a result, the `softening` parameter doesn't have a noticeable effect on the simulation results.
@@ -272,19 +279,20 @@ To automatically infer material parameters from a target video, we can design a 
 
 The proposed framework would operate as follows:
 
-1.  **Scene Segmentation from Target Video:** Given a target video of a real-world object (or multiple objects), the first step is to use a **GS segmentation** technique. This process would analyze the video and identify distinct objects, assigning a unique label to the set of Gaussians that represent each object. This is crucial for scenes with multiple materials, as it allows us to optimize parameters for each object independently.
+1. **Scene Segmentation from Target Video:** Given a target video of a real-world object (or multiple objects), the first step is to use a **GS segmentation** technique. This process would analyze the video and identify distinct objects, assigning a unique label to the set of Gaussians that represent each object. This is crucial for scenes with multiple materials, as it allows us to optimize parameters for each object independently.
 
-2.  **Differentiable Physics Simulation:** The core of the framework is a **differentiable MPM simulator**. Unlike a standard simulator, a differentiable version allows us to analytically compute the gradient of the simulation's outcome with respect to the input physical parameters (e.g., Young's modulus, softening).
+2. **Differentiable Physics Simulation:** The core of the framework is a **differentiable MPM simulator**. Unlike a standard simulator, a differentiable version allows us to analytically compute the gradient of the simulation's outcome with respect to the input physical parameters (e.g., Young's modulus, softening).
 
-3.  **Optimization Loop:** The system would then enter an iterative loop to find the best parameters using a gradient-based optimization method, which is a classic approach in optimization problems.
+3. **Optimization Loop:** The system would then enter an iterative loop to find the best parameters using a gradient-based optimization method, which is a classic approach in optimization problems.
 
-4.  **Convergence:** The optimization is repeated until the loss converges to a minimum. At this point, the simulation video should closely match the target video, and the resulting set of parameters will be the inferred physical properties of the material(s).
+4. **Convergence:** The optimization is repeated until the loss converges to a minimum. At this point, the simulation video should closely match the target video, and the resulting set of parameters will be the inferred physical properties of the material(s).
 
 This state-of-the-art "analysis-by-synthesis" approach is more efficient than black-box methods, as it uses gradient information to intelligently search for the optimal parameters rather than relying on random guessing.
 
 ---
 
 ## Reference
+
 ```bibtex
 @inproceedings{xie2024physgaussian,
     title     = {Physgaussian: Physics-integrated 3d gaussians for generative dynamics},
