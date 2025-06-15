@@ -58,53 +58,53 @@ In this part, I simulated three different materials with default parameters as a
 - `sand`:
   - Baseline Parameter Settings:
 
-        | Parameter | Value |
-        |:----------|:---------------------|
-        | `material` | `sand` |
-        | `n_grid` | 100 |
-        | `substep_dt` | 1e-4 |
-        | `grid_v_damping_scale` | 0.9999 |
-        | `softening` | 0.1 |
+    | Parameter | Value |
+    |:----------|:---------------------|
+    | `material` | `sand` |
+    | `n_grid` | 100 |
+    | `substep_dt` | 1e-4 |
+    | `grid_v_damping_scale` | 0.9999 |
+    | `softening` | 0.1 |
 
-        **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_sand_sim.json`. The `n_grid` is larger than other materials, which is because the sand material requires a higher resolution to simulate the details of the sand particles.
+    **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_sand_sim.json`. The `n_grid` is larger than other materials, which is because the sand material requires a higher resolution to simulate the details of the sand particles.
 
   - Simulation Video: [Link to the video](https://youtube.com/shorts/2JhbbjYjp6c?feature=share)
 
-        ![GIF](https://github.com/user-attachments/assets/8fcc079e-9af9-4634-b71a-0a6d60168805)
+    ![GIF](https://github.com/user-attachments/assets/8fcc079e-9af9-4634-b71a-0a6d60168805)
   - Brief Description:
         `sand` is a granular medium. Instead of a single solid object, it behaves as a collection of individual particles. Upon impact, the sand does not bounce as a whole but instead flows and disperses, with particles scattering and settling into a pile. This demonstrates the characteristic behavior of granular materials.
 - `metal`:
   - Parameters:
 
-        | Parameter | Value |
-        |:----------|:---------------------|
-        | `material` | `metal` |
-        | `n_grid` | 25 |
-        | `substep_dt` | 1e-4 |
-        | `grid_v_damping_scale` | 0.9999 |
-        | `softening` | 0.1 |
+    | Parameter | Value |
+    |:----------|:---------------------|
+    | `material` | `metal` |
+    | `n_grid` | 25 |
+    | `substep_dt` | 1e-4 |
+    | `grid_v_damping_scale` | 0.9999 |
+    | `softening` | 0.1 |
 
-        **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_metal_sim.json`.
+    **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_metal_sim.json`.
   - Simulation Video: [Link to the video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
 
-        ![GIF](https://github.com/user-attachments/assets/2a4f90f9-7135-4c97-92b2-ee5788c1a7a2)
+    ![GIF](https://github.com/user-attachments/assets/2a4f90f9-7135-4c97-92b2-ee5788c1a7a2)
   - Brief Description:
         `metal` behaves as an elastoplastic solid. Under small impacts, it is elastic, meaning it resists bending and springs back to its original shape. However, if subjected to a very strong force, it will exceed its elastic limit and undergo plastic deformation, causing it to bend permanently and not return to its original form. In this `ficus` simulation, as I don't provide a `yield_stress` parameter, it defaults to be 0, which means the metal will start to deform plastically under any impact, resulting in a permanent bend.
 - `plasticine`:
   - Parameters:
 
-        | Parameter | Value |
-        |:----------|:---------------------|
-        | `material` | `plasticine` |
-        | `n_grid` | 25 |
-        | `substep_dt` | 1e-4 |
-        | `grid_v_damping_scale` | 0.9999 |
-        | `softening` | 0.1 |
+    | Parameter | Value |
+    |:----------|:---------------------|
+    | `material` | `plasticine` |
+    | `n_grid` | 25 |
+    | `substep_dt` | 1e-4 |
+    | `grid_v_damping_scale` | 0.9999 |
+    | `softening` | 0.1 |
 
-        **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_plasticine_sim.json`.
+    **Note:** For the details of other parameters, please refer to the file I provided in `config/baseline/custom_plasticine_sim.json`.
   - Simulation Video: [Link to the video](https://youtube.com/shorts/iPZ-AKoJf8w?feature=share)
 
-        ![GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87)
+    ![GIF](https://github.com/user-attachments/assets/60b86fca-22c5-4f30-9b28-3e3502a00c87)
   - Brief Description: This is an extra one. I only ran the simulation with `sand` and `metal` materials, but I noticed that only the `plasticine` material be used for `softening` parameter. However, after running the simulation, I found that the `plasticine` material behaves to be a very bouncy material, which is not the expected behavior. I think this is because the young's modulus (`E`), which is shared by all materials I used, is set to a very high value (2e6). With such a high value, the `plasticine` material behaves more like a solid than a soft material. I think this is not the expected behavior of the `plasticine` material.
 
 The default values of the parameters are mostly from `ficus_config.json` in the official repository, except for the parameters that are listed above. And all the simulation videos are run with the original `gs_simlation.py` with the `ficus_whitebg-trained` model:
@@ -132,17 +132,17 @@ This study explores the effect of the MPM grid resolution (`n_grid`).
 - **Material:** `sand` (decreased from 100 to 50)
   - **PSNR:** 29.05
 
-        ![PSNR vs Frame](imgs/n_grid/sand.png)
+    ![PSNR vs Frame](imgs/n_grid/sand.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/pRCkLeAwtV4?feature=share)
 - **Material:** `metal` (increased from 25 to 50)
   - **PSNR:** 17.01
 
-        ![PSNR vs Frame](imgs/n_grid/metal.png)
+    ![PSNR vs Frame](imgs/n_grid/metal.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/hDyMcZAmI74?feature=share)
 - **Material:** `plasticine` (increased from 25 to 50)
   - **PSNR:** 22.08
 
-        ![PSNR vs Frame](imgs/n_grid/plasticine.png)
+    ![PSNR vs Frame](imgs/n_grid/plasticine.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
 
 ##### Visual Comparison for `n_grid`
@@ -170,17 +170,17 @@ This study explores the effect of the simulation time step size (`substep_dt`).
 - **Material:** `sand`
   - **PSNR:** 15.52
 
-        ![PSNR vs Frame](imgs/substep_dt/sand.png)
+    ![PSNR vs Frame](imgs/substep_dt/sand.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/TjX9gdCpIvY?feature=share)
 - **Material:** `metal`
   - **PSNR:** 18.35
 
-        ![PSNR vs Frame](imgs/substep_dt/metal.png)
+    ![PSNR vs Frame](imgs/substep_dt/metal.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/apv-FjOMsZQ?feature=share)
 - **Material:** `plasticine`
   - **PSNR:** 22.64
 
-        ![PSNR vs Frame](imgs/substep_dt/plasticine.png)
+    ![PSNR vs Frame](imgs/substep_dt/plasticine.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/UkUaPRoWHSk?feature=share)
 
 ##### Visual Comparison for `substep_dt`
@@ -208,17 +208,17 @@ This study explores the effect of the grid velocity damping factor (`grid_v_damp
 - **Material:** `sand`
   - **PSNR:** 15.33
 
-        ![PSNR vs Frame](imgs/grid_v_damping_scale/sand.png)
+    ![PSNR vs Frame](imgs/grid_v_damping_scale/sand.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/MOIi2vrwgAA?feature=share)
 - **Material:** `metal`
   - **PSNR:** 17.67
 
-        ![PSNR vs Frame](imgs/grid_v_damping_scale/metal.png)
+    ![PSNR vs Frame](imgs/grid_v_damping_scale/metal.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/Vt2kfQB-NG8?feature=share)
 - **Material:** `plasticine`
   - **PSNR:** 29.77
 
-        ![PSNR vs Frame](imgs/grid_v_damping_scale/plasticine.png)
+    ![PSNR vs Frame](imgs/grid_v_damping_scale/plasticine.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/mFf3deCnkcA?feature=share)
 
 ##### Visual Comparison for `grid_v_damping_scale`
@@ -244,17 +244,17 @@ This study explores the effect of the stress softening factor (`softening`).
 - **Material:** `sand`
   - **PSNR:** 31.93
 
-        ![PSNR vs Frame](imgs/softening/sand.png)
+    ![PSNR vs Frame](imgs/softening/sand.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/3DcBmdQ2S40?feature=share)
 - **Material:** `metal`
   - **PSNR:** 38.52
 
-        ![PSNR vs Frame](imgs/softening/metal.png)
+    ![PSNR vs Frame](imgs/softening/metal.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/H9I1ZmHY5hw?feature=share)
 - **Material:** `plasticine`
   - **PSNR:** 41.81
 
-        ![PSNR vs Frame](imgs/softening/plasticine.png)
+    ![PSNR vs Frame](imgs/softening/plasticine.png)
   - **Simulation Video:** [Link to video](https://youtube.com/shorts/KQwwl2Oxij8?feature=share)
 
 ##### Visual Comparison for `softening`
